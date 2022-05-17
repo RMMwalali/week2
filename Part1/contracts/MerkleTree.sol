@@ -8,13 +8,34 @@ contract MerkleTree is Verifier {
     uint256[] public hashes; // the Merkle tree in flattened array form
     uint256 public index = 0; // the current index of the first unfilled leaf
     uint256 public root; // the current Merkle root
-
+    uint256 public constant MAXIMUMLEAVES = 8;//constant to declare maximum number of leaves on tree
+    uint256 public constant SIZE_OF_TREE = 15;//total hashes from tree
     constructor() {
         // [assignment] initialize a Merkle tree of 8 with blank leaves
+        for (uint256 i = 0; i < SIZE_OF_TREE; i++){
+            hashes.push(0);
+        }
     }
 
     function insertLeaf(uint256 hashedLeaf) public returns (uint256) {
         // [assignment] insert a hashed leaf into the Merkle tree
+        require(index < MAXIMUMLEAVES,"Merkle tree is full I'm afraid");
+        //statement should revert actions if tree is full
+        hashes[index] = hashedLeaf;
+        //saves leaf to given index
+        index++;
+        //moves to next leaf
+        uint256 HASH_ID = MAXIMUMLEAVES;
+        //assigns first calculated hash
+        //for loop to calculate and update new hashes
+        for(uint256 i = 0;i < SIZE_OF_TREE - 1; i += 2){
+            uint256 j PoseidonT3.poseidon([hashes[i],hashes[i+1]]);
+            hashes[HASH_ID] = j;
+            HASH_ID++;
+        }
+        root = hashes[SIZE_OF_TREE - 1];
+        //updates value of final hash
+        return root;
     }
 
     function verify(
@@ -25,5 +46,14 @@ contract MerkleTree is Verifier {
         ) public view returns (bool) {
 
         // [assignment] verify an inclusion proof and check that the proof root matches current root
+        if(!Verifier.verifyProof(a ,b ,c ,input)){
+            return false;
+        }
+
+        uint256 Proof = input[0];
+        if (Proof != root){
+            return false
+        }
+        return true
     }
 }
